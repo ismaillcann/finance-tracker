@@ -75,8 +75,7 @@ export const WatchlistScreen = ({ navigation }: any) => {
     };
 
     const handleAssetPress = (item: WatchlistItem) => {
-        // Navigate to asset detail screen (to be implemented)
-        console.log('Asset pressed:', item.asset.symbol);
+        navigation.navigate('AssetDetail', { asset: item.asset });
     };
 
     if (loading) {
