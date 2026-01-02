@@ -1,36 +1,40 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { WatchlistScreen } from '../screens/watchlist/WatchlistScreen';
+import { SearchScreen } from '../screens/watchlist/SearchScreen';
 import { useColorScheme } from 'react-native';
 import { colors } from '../theme/colors';
 
-const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 export const MainNavigator = () => {
     const colorScheme = useColorScheme() ?? 'light';
     const theme = colors[colorScheme];
 
     return (
-        <Tab.Navigator
+        <Stack.Navigator
             screenOptions={{
-                tabBarStyle: {
-                    backgroundColor: theme.surface,
-                    borderTopColor: theme.border,
-                },
-                tabBarActiveTintColor: theme.primary,
-                tabBarInactiveTintColor: theme.textSecondary,
                 headerStyle: {
                     backgroundColor: theme.surface,
                 },
                 headerTintColor: theme.text,
+                headerShadowVisible: false,
             }}>
-            <Tab.Screen
+            <Stack.Screen
                 name="Watchlist"
                 component={WatchlistScreen}
                 options={{
                     title: 'My Watchlist',
                 }}
             />
-        </Tab.Navigator>
+            <Stack.Screen
+                name="Search"
+                component={SearchScreen}
+                options={{
+                    title: 'Add Asset',
+                    presentation: 'modal',
+                }}
+            />
+        </Stack.Navigator>
     );
 };
