@@ -5,7 +5,9 @@ import {
     StyleSheet,
     TouchableOpacity,
     useColorScheme,
+    Alert,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { Asset, PriceData } from '../../types';
 import { colors } from '../../theme/colors';
 import { spacing, borderRadius } from '../../theme/spacing';
@@ -17,6 +19,7 @@ interface AssetCardProps {
     priceData?: PriceData;
     onPress?: () => void;
     onRemove?: () => void;
+    showDelete?: boolean;
 }
 
 export const AssetCard: React.FC<AssetCardProps> = ({
@@ -24,6 +27,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     priceData,
     onPress,
     onRemove,
+    showDelete = false,
 }) => {
     const colorScheme = useColorScheme() ?? 'light';
     const theme = colors[colorScheme];
@@ -31,7 +35,33 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     const isPositive = priceData ? priceData.changePercent >= 0 : true;
     const changeColor = isPositive ? theme.success : theme.error;
 
-    return (
+    const handleDelete = () => {
+        Alert.alert(
+            'Remove Asset',
+            `Are you sure you want to remove ${asset.symbol} from your watchlist?`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Remove',
+                    style: 'destructive',
+                    onPress: onRemove,
+                },
+            ],
+        );
+    };
+
+    const renderRightActions = () => (
+        <TouchableOpacity
+            style={[styles.deleteAction, { backgroundColor: theme.error }]}
+            onPress={handleDelete}>
+            <Text style={styles.deleteActionText}>Delete</Text>
+        </TouchableOpacity>
+    );
+
+    const cardContent = (
         <TouchableOpacity
             style={[styles.container, { backgroundColor: theme.surface }]}
             onPress={onPress}
@@ -57,7 +87,11 @@ export const AssetCard: React.FC<AssetCardProps> = ({
                             <Text style={[styles.price, { color: theme.text }]}>
                                 {formatPrice(priceData.price)}
                             </Text>
-                            <View style={[styles.changeContainer, { backgroundColor: changeColor + '20' }]}>
+                            <View
+                                style={[
+                                    styles.changeContainer,
+                                    { backgroundColor: changeColor + '20' },
+                                ]}>
                                 <Text style={[styles.change, { color: changeColor }]}>
                                     {formatPercent(priceData.changePercent)}
                                 </Text>
@@ -72,6 +106,19 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             </View>
         </TouchableOpacity>
     );
+
+    if (showDelete && onRemove) {
+        return (
+            <Swipeable
+                renderRightActions={renderRightActions}
+                overshootRight={false}
+                friction={2}>
+                {cardContent}
+            </Swipeable>
+        );
+    }
+
+    return cardContent;
 };
 
 const styles = StyleSheet.create({
@@ -119,5 +166,17 @@ const styles = StyleSheet.create({
     },
     loading: {
         fontSize: typography.fontSize.sm,
+    },
+    deleteAction: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 80,
+        marginBottom: spacing.sm,
+        borderRadius: borderRadius.md,
+    },
+    deleteActionText: {
+        color: '#ffffff',
+        fontSize: typography.fontSize.md,
+        fontWeight: typography.fontWeight.semibold,
     },
 });

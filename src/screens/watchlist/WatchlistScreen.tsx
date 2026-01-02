@@ -7,12 +7,13 @@ import {
     useColorScheme,
     RefreshControl,
     TouchableOpacity,
+    Alert,
 } from 'react-native';
 import { AssetCard } from '../../components/watchlist/AssetCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { Button } from '../../components/common/Button';
-import { getUserWatchlist, watchWatchlist } from '../../services/firebase/firestore';
+import { getUserWatchlist, watchWatchlist, removeFromWatchlist } from '../../services/firebase/firestore';
 import { getCurrentUser, signOut } from '../../services/firebase/auth';
 import { useAssetQuote } from '../../hooks/useAssetData';
 import { WatchlistItem } from '../../types';
@@ -23,7 +24,8 @@ import { typography } from '../../theme/typography';
 const WatchlistItemWithPrice: React.FC<{
     item: WatchlistItem;
     onPress: () => void;
-}> = ({ item, onPress }) => {
+    onRemove: () => void;
+}> = ({ item, onPress, onRemove }) => {
     const { data: priceData } = useAssetQuote(
         item.asset.symbol,
         item.asset.type,
@@ -35,6 +37,8 @@ const WatchlistItemWithPrice: React.FC<{
             asset={item.asset}
             priceData={priceData || undefined}
             onPress={onPress}
+            onRemove={onRemove}
+            showDelete={true}
         />
     );
 };
@@ -78,6 +82,23 @@ export const WatchlistScreen = ({ navigation }: any) => {
         navigation.navigate('AssetDetail', { asset: item.asset });
     };
 
+    const handleRemoveAsset = async (item: WatchlistItem) => {
+        try {
+            const success = await removeFromWatchlist(item.id);
+            if (!success) {
+                Alert.alert(
+                    'Error',
+                    'Failed to remove asset from watchlist. Please try again.',
+                );
+            }
+        } catch (error) {
+            Alert.alert(
+                'Error',
+                'An unexpected error occurred while removing the asset.',
+            );
+        }
+    };
+
     if (loading) {
         return (
             <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -119,6 +140,7 @@ export const WatchlistScreen = ({ navigation }: any) => {
                         <WatchlistItemWithPrice
                             item={item}
                             onPress={() => handleAssetPress(item)}
+                            onRemove={() => handleRemoveAsset(item)}
                         />
                     )}
                     contentContainerStyle={styles.listContent}

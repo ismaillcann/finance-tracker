@@ -7,6 +7,7 @@ import {
     useColorScheme,
     TouchableOpacity,
     Alert,
+    SectionList,
 } from 'react-native';
 import { Input } from '../../components/common/Input';
 import { AssetCard } from '../../components/watchlist/AssetCard';
@@ -14,6 +15,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { useAssetSearch } from '../../hooks/useAssetData';
 import { addToWatchlist } from '../../services/firebase/firestore';
 import { getCurrentUser } from '../../services/firebase/auth';
+import { getPopularAssets } from '../../constants/popularAssets';
 import { Asset } from '../../types';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
@@ -35,18 +37,45 @@ export const SearchScreen = ({ navigation }: any) => {
 
     const user = getCurrentUser();
 
+    const popularAssets = getPopularAssets(selectedType);
+
     const handleAddToWatchlist = async (asset: Asset) => {
         if (!user) {
-            Alert.alert('Error', 'You must be logged in to add assets');
+            Alert.alert(
+                'Authentication Required',
+                'Please log in to add assets to your watchlist',
+            );
             return;
         }
 
-        const result = await addToWatchlist(user.id, asset);
-        if (result) {
-            Alert.alert('Success', `${asset.symbol} added to watchlist`);
-            navigation.goBack();
-        } else {
-            Alert.alert('Error', 'Failed to add asset to watchlist');
+        try {
+            const result = await addToWatchlist(user.id, asset);
+            if (result) {
+                Alert.alert(
+                    'Success',
+                    `${asset.symbol} has been added to your watchlist`,
+                    [
+                        {
+                            text: 'Add More',
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'View Watchlist',
+                            onPress: () => navigation.goBack(),
+                        },
+                    ],
+                );
+            } else {
+                Alert.alert(
+                    'Error',
+                    'Failed to add asset. It may already be in your watchlist.',
+                );
+            }
+        } catch (error) {
+            Alert.alert(
+                'Error',
+                'An unexpected error occurred. Please try again.',
+            );
         }
     };
 
@@ -77,6 +106,17 @@ export const SearchScreen = ({ navigation }: any) => {
         </View>
     );
 
+    const sections = [
+        {
+            title: 'Popular Assets',
+            data: query.length < 2 ? popularAssets : [],
+        },
+        {
+            title: 'Search Results',
+            data: query.length >= 2 ? searchResults : [],
+        },
+    ];
+
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={styles.searchSection}>
@@ -90,35 +130,33 @@ export const SearchScreen = ({ navigation }: any) => {
                 {renderTypeFilter()}
             </View>
 
-            {query.length < 2 ? (
-                <EmptyState
-                    title="Start Searching"
-                    subtitle="Enter at least 2 characters to search for assets"
-                />
-            ) : isLoading ? (
-                <View style={styles.loadingContainer}>
-                    <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
-                        Searching...
-                    </Text>
-                </View>
-            ) : searchResults.length === 0 ? (
-                <EmptyState
-                    title="No Results"
-                    subtitle={`No assets found for "${query}"`}
-                />
-            ) : (
-                <FlatList
-                    data={searchResults}
-                    keyExtractor={item => item.id}
-                    renderItem={({ item }) => (
-                        <AssetCard
-                            asset={item}
-                            onPress={() => handleAddToWatchlist(item)}
-                        />
-                    )}
-                    contentContainerStyle={styles.listContent}
-                />
-            )}
+            <SectionList
+                sections={sections}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => (
+                    <AssetCard asset={item} onPress={() => handleAddToWatchlist(item)} />
+                )}
+                renderSectionHeader={({ section: { title, data } }) =>
+                    data.length > 0 ? (
+                        <View style={[styles.sectionHeader, { backgroundColor: theme.background }]}>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                                {title}
+                            </Text>
+                        </View>
+                    ) : null
+                }
+                contentContainerStyle={styles.listContent}
+                ListEmptyComponent={
+                    <EmptyState
+                        title={query.length < 2 ? 'Start Searching' : 'No Results'}
+                        subtitle={
+                            query.length < 2
+                                ? 'Enter at least 2 characters or select from popular assets below'
+                                : `No assets found for "${query}"`
+                        }
+                    />
+                }
+            />
         </View>
     );
 };
@@ -146,16 +184,16 @@ const styles = StyleSheet.create({
         fontSize: typography.fontSize.sm,
         fontWeight: typography.fontWeight.medium,
     },
+    sectionHeader: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+    },
+    sectionTitle: {
+        fontSize: typography.fontSize.md,
+        fontWeight: typography.fontWeight.semibold,
+    },
     listContent: {
         padding: spacing.md,
         paddingTop: 0,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        fontSize: typography.fontSize.md,
     },
 });
