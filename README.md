@@ -1,97 +1,130 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Finance Tracker Mobile
 
-# Getting Started
+A comprehensive mobile application for tracking and visualizing financial market data including stocks, indices, and cryptocurrencies with real-time updates and interactive charts.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 🎯 Features
 
-## Step 1: Start Metro
+- **Real-time Market Data**: Track stocks, indices, and cryptocurrencies with live price updates
+- **Interactive Charts**: Candlestick, line, and volume charts with zoom and pan capabilities
+- **Personalized Watchlist**: Create and manage your custom watchlist
+- **Comprehensive Metrics**: View open, high, low, close, volume, and market cap data
+- **Cross-Platform**: Works on both iOS and Android
+- **Dark Mode Support**: Beautiful UI with light and dark themes
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 🛠 Technology Stack
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **Frontend**: React Native 0.83.1 with TypeScript
+- **Navigation**: React Navigation
+- **Charts**: Victory Native
+- **Backend**: Firebase (Authentication & Firestore)
+- **Data APIs**: TwelveData (stocks/indices) & CoinGecko (crypto)
+- **State Management**: TanStack Query (React Query)
 
-```sh
-# Using npm
-npm start
+## 📋 Prerequisites
 
-# OR using Yarn
-yarn start
+- Node.js >= 20
+- npm or yarn
+- Xcode (for iOS development)
+- Android Studio (for Android development)
+- CocoaPods (for iOS dependencies)
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/finance-tracker.git
+cd finance-tracker
 ```
 
-## Step 2: Build and run your app
+### 2. Install dependencies
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```bash
+npm install
 ```
 
-### iOS
+### 3. Install iOS dependencies
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
+```bash
+cd ios
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
+cd ..
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+### 4. Configure environment variables
 
-```sh
-# Using npm
+Create a `.env` file in the root directory:
+
+```env
+TWELVEDATA_API_KEY=your_twelvedata_api_key
+COINGECKO_API_KEY=your_coingecko_api_key
+```
+
+See [docs/API_SETUP.md](docs/API_SETUP.md) for detailed API setup instructions.
+
+### 5. Configure Firebase
+
+Follow the instructions in [docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md) to set up Firebase for authentication and Firestore.
+
+### 6. Run the app
+
+**iOS:**
+```bash
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+**Android:**
+```bash
+npm run android
+```
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## 📁 Project Structure
 
-## Step 3: Modify your app
+```
+src/
+├── components/          # Reusable UI components
+│   ├── common/         # Buttons, inputs, cards, loaders
+│   └── charts/         # Chart components
+├── screens/            # Screen components
+│   ├── auth/          # Login, Register
+│   ├── watchlist/     # Watchlist screen
+│   └── asset/         # Asset detail screen
+├── navigation/         # Navigation configuration
+├── services/          # API services
+│   ├── api/          # Financial data API
+│   └── firebase/     # Firebase services
+├── hooks/             # Custom React hooks
+├── utils/             # Utility functions
+├── types/             # TypeScript type definitions
+└── theme/             # Theme configuration
+```
 
-Now that you have successfully run the app, let's make changes!
+## 🧪 Testing
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+Run tests:
+```bash
+npm test
+```
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+Run linter:
+```bash
+npm run lint
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+Type checking:
+```bash
+npx tsc --noEmit
+```
 
-## Congratulations! :tada:
+## 📝 License
 
-You've successfully run and modified your React Native App. :partying_face:
+This project is part of a graduation thesis.
 
-### Now what?
+## 👨‍💻 Author
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+İsmail Can - Student ID: 2020556013
 
-# Troubleshooting
+## 🙏 Acknowledgments
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+This project was developed as a graduation thesis focusing on modern mobile development technologies and advanced frontend engineering.
