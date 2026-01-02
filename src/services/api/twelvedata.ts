@@ -1,66 +1,49 @@
 import { twelveDataClient } from './client';
-import { Asset, Quote, TimeSeriesData } from '../../types';
-import { processCandlestickData } from '../../utils/chartHelpers';
+import { Quote, TimeSeriesData, Asset } from '../../types';
 import Config from 'react-native-config';
+import { getMockQuoteForSymbol, getMockTimeSeries } from './mockData';
 
-const API_KEY = Config.TWELVEDATA_API_KEY || 'demo';
-
-export const searchAssets = async (query: string): Promise<Asset[]> => {
-    try {
-        const response = await twelveDataClient.get<any>('/symbol_search', {
-            symbol: query,
-            apikey: API_KEY,
-        });
-
-        if (!response.data || response.data.length === 0) {
-            return [];
-        }
-
-        return response.data.slice(0, 10).map((item: any) => ({
-            id: `${item.symbol}-${item.exchange}`,
-            symbol: item.symbol,
-            name: item.instrument_name,
-            type: item.instrument_type === 'Common Stock' ? 'stock' : 'index',
-            exchange: item.exchange,
-            currency: item.currency,
-        }));
-    } catch (error) {
-        console.error('Error searching assets:', error);
-        return [];
-    }
-};
+const API_KEY = Config.TWELVEDATA_API_KEY || '';
+const USE_MOCK_DATA = !API_KEY || API_KEY === 'your_twelvedata_api_key_here';
 
 export const getQuote = async (symbol: string): Promise<Quote | null> => {
+    // Use mock data if no API key
+    if (USE_MOCK_DATA) {
+        console.log(`[TwelveData] Using mock data for ${symbol}`);
+        return getMockQuoteForSymbol(symbol);
+    }
+
     try {
-        const response = await twelveDataClient.get<any>('/quote', {
-            symbol,
-            apikey: API_KEY,
+        const response = await twelveDataClient.get('/quote', {
+            params: {
+                symbol,
+                apikey: API_KEY,
+            },
         });
 
-        if (!response || response.code === 400) {
-            return null;
+        const data = response.data;
+
+        if (!data || data.status === 'error') {
+            console.warn(`[TwelveData] API error for ${symbol}, using mock data`);
+            return getMockQuoteForSymbol(symbol);
         }
 
-        const current = parseFloat(response.close);
-        const previous = parseFloat(response.previous_close);
-        const change = current - previous;
-        const changePercent = (change / previous) * 100;
-
         return {
-            price: current,
-            change,
-            changePercent,
+            symbol: data.symbol,
+            price: parseFloat(data.close) || 0,
+            change: parseFloat(data.change) || 0,
+            changePercent: parseFloat(data.percent_change) || 0,
+            open: parseFloat(data.open) || 0,
+            high: parseFloat(data.high) || 0,
+            low: parseFloat(data.low) || 0,
+            close: parseFloat(data.close) || 0,
+            volume: parseInt(data.volume, 10) || 0,
+            previousClose: parseFloat(data.previous_close) || 0,
             timestamp: Date.now(),
-            open: parseFloat(response.open),
-            high: parseFloat(response.high),
-            low: parseFloat(response.low),
-            close: current,
-            volume: parseFloat(response.volume || '0'),
-            previousClose: previous,
         };
-    } catch (error) {
-        console.error('Error fetching quote:', error);
-        return null;
+    } catch (error: any) {
+        console.warn(`[TwelveData] Error fetching quote for ${symbol}:`, error.message);
+        return getMockQuoteForSymbol(symbol);
     }
 };
 
@@ -69,25 +52,87 @@ export const getTimeSeries = async (
     interval: string = '1day',
     outputsize: number = 30,
 ): Promise<TimeSeriesData | null> => {
-    try {
-        const response = await twelveDataClient.get<any>('/time_series', {
+    // Use mock data if no API key
+    if (USE_MOCK_DATA) {
+        console.log(`[TwelveData] Using mock time series for ${symbol}`);
+        return {
             symbol,
-            interval,
-            outputsize,
-            apikey: API_KEY,
+            data: getMockTimeSeries(symbol, outputsize),
+        };
+    }
+
+    try {
+        const response = await twelveDataClient.get('/time_series', {
+            params: {
+                symbol,
+                interval,
+                outputsize,
+                apikey: API_KEY,
+            },
         });
 
-        if (!response.values || response.values.length === 0) {
-            return null;
+        const data = response.data;
+
+        if (!data || !data.values || data.status === 'error') {
+            console.warn(`[TwelveData] API error for ${symbol} time series, using mock data`);
+            return {
+                symbol,
+                data: getMockTimeSeries(symbol, outputsize),
+            };
         }
+
+        const candlestickData = data.values.map((item: any) => ({
+            timestamp: new Date(item.datetime).getTime(),
+            open: parseFloat(item.open) || 0,
+            high: parseFloat(item.high) || 0,
+            low: parseFloat(item.low) || 0,
+            close: parseFloat(item.close) || 0,
+            volume: parseInt(item.volume, 10) || 0,
+        }));
 
         return {
             symbol,
-            interval,
-            data: processCandlestickData(response.values.reverse()),
+            data: candlestickData,
         };
-    } catch (error) {
-        console.error('Error fetching time series:', error);
-        return null;
+    } catch (error: any) {
+        console.warn(`[TwelveData] Error fetching time series for ${symbol}:`, error.message);
+        return {
+            symbol,
+            data: getMockTimeSeries(symbol, outputsize),
+        };
+    }
+};
+
+export const searchAssets = async (query: string): Promise<Asset[]> => {
+    // Return empty for mock mode
+    if (USE_MOCK_DATA) {
+        return [];
+    }
+
+    try {
+        const response = await twelveDataClient.get('/symbol_search', {
+            params: {
+                symbol: query,
+                apikey: API_KEY,
+            },
+        });
+
+        const data = response.data;
+
+        if (!data || !data.data) {
+            return [];
+        }
+
+        return data.data.slice(0, 10).map((item: any) => ({
+            id: item.symbol,
+            symbol: item.symbol,
+            name: item.instrument_name,
+            type: item.instrument_type === 'Common Stock' ? 'stock' : 'index',
+            exchange: item.exchange,
+            currency: item.currency,
+        }));
+    } catch (error: any) {
+        console.error('[TwelveData] Search error:', error.message);
+        return [];
     }
 };
