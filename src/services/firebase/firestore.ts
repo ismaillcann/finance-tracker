@@ -5,4 +5,4 @@
 // export * from './firestore.real';
 
 // For development without Firebase, use:
-export * from './firestore.mock';
+export * from './firestore.real';

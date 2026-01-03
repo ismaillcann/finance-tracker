@@ -94,6 +94,10 @@ export const WatchlistScreen = ({ navigation }: any) => {
         navigation.navigate('AssetDetail', { asset: item.asset });
     };
 
+    const handleAddAsset = () => {
+        navigation.navigate('Search');
+    };
+
     const handleRemoveAsset = async (item: WatchlistItem) => {
         try {
             const success = await removeFromWatchlist(item.id);
@@ -192,13 +196,13 @@ export const WatchlistScreen = ({ navigation }: any) => {
                 />
             )}
 
-            <View style={styles.footer}>
-                <Button
-                    title="Add Asset"
-                    onPress={() => navigation.navigate('Search')}
-                    style={styles.addButton}
-                />
-            </View>
+            {/* Floating Action Button */}
+            <TouchableOpacity
+                style={[styles.fab, { backgroundColor: theme.primary, shadowColor: theme.primary }]}
+                onPress={handleAddAsset}
+                activeOpacity={0.8}>
+                <Text style={styles.fabIcon}>+</Text>
+            </TouchableOpacity>
 
             {/* Sign Out Confirmation Modal */}
             <Modal
@@ -324,8 +328,25 @@ const styles = StyleSheet.create({
     footer: {
         padding: spacing.md,
     },
-    addButton: {
-        width: '100%',
+    fab: {
+        position: 'absolute',
+        bottom: spacing.lg,
+        right: spacing.lg,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    fabIcon: {
+        fontSize: 32,
+        color: '#fff',
+        fontWeight: '300',
+        marginTop: -2,
     },
     // Modal Styles
     modalOverlay: {
