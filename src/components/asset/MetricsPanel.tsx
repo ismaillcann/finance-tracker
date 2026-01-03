@@ -13,13 +13,13 @@ interface MetricsPanelProps {
 interface MetricCardProps {
     label: string;
     value: string;
-    icon: string;
+    icon?: string;
     isPositive?: boolean;
     showColor?: boolean;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon, isPositive, showColor }) => {
-    const colorScheme = useColorScheme() ?? 'light';
+    const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
 
     const valueColor = showColor
@@ -29,18 +29,15 @@ const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon, isPositive,
         : theme.text;
 
     return (
-        <View style={[styles.card, { backgroundColor: theme.surface }]}>
-            <View style={styles.cardHeader}>
-                <Text style={styles.icon}>{icon}</Text>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
-            </View>
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
             <Text style={[styles.value, { color: valueColor }]}>{value}</Text>
         </View>
     );
 };
 
 export const MetricsPanel: React.FC<MetricsPanelProps> = ({ quote }) => {
-    const colorScheme = useColorScheme() ?? 'light';
+    const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
 
     const isPositiveDay = quote.close >= quote.open;
@@ -48,18 +45,19 @@ export const MetricsPanel: React.FC<MetricsPanelProps> = ({ quote }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={[styles.title, { color: theme.text }]}>📊 Key Metrics</Text>
+            <View style={[styles.titleContainer, { borderBottomColor: theme.border }]}>
+                <Text style={[styles.title, { color: theme.text }]}>KEY METRICS</Text>
+                <View style={[styles.titleDivider, { backgroundColor: theme.primary }]} />
+            </View>
 
             <View style={styles.row}>
                 <MetricCard
                     label="Open"
                     value={formatPrice(quote.open)}
-                    icon="🔓"
                 />
                 <MetricCard
                     label="High"
                     value={formatPrice(quote.high)}
-                    icon="📈"
                     isPositive={true}
                     showColor={true}
                 />
@@ -69,14 +67,12 @@ export const MetricsPanel: React.FC<MetricsPanelProps> = ({ quote }) => {
                 <MetricCard
                     label="Low"
                     value={formatPrice(quote.low)}
-                    icon="📉"
                     isPositive={false}
                     showColor={true}
                 />
                 <MetricCard
                     label="Close"
                     value={formatPrice(quote.close)}
-                    icon="🔒"
                     isPositive={isPositiveDay}
                     showColor={true}
                 />
@@ -86,12 +82,10 @@ export const MetricsPanel: React.FC<MetricsPanelProps> = ({ quote }) => {
                 <MetricCard
                     label="Volume"
                     value={formatVolume(quote.volume)}
-                    icon="📊"
                 />
                 <MetricCard
                     label="Prev Close"
                     value={formatPrice(quote.previousClose)}
-                    icon="⏮️"
                 />
             </View>
 
@@ -99,7 +93,6 @@ export const MetricsPanel: React.FC<MetricsPanelProps> = ({ quote }) => {
                 <MetricCard
                     label="24h Change"
                     value={`${formatPrice(quote.change)} (${quote.changePercent >= 0 ? '+' : ''}${quote.changePercent.toFixed(2)}%)`}
-                    icon={isPositiveChange ? '🚀' : '📉'}
                     isPositive={isPositiveChange}
                     showColor={true}
                 />
@@ -112,10 +105,24 @@ const styles = StyleSheet.create({
     container: {
         padding: spacing.md,
     },
-    title: {
-        fontSize: typography.fontSize.xl,
-        fontWeight: typography.fontWeight.bold,
+    titleContainer: {
+        paddingBottom: spacing.sm,
         marginBottom: spacing.md,
+        borderBottomWidth: 1,
+    },
+    titleDivider: {
+        position: 'absolute',
+        bottom: -1,
+        left: 0,
+        width: 80,
+        height: 3,
+        borderRadius: 2,
+    },
+    title: {
+        fontSize: typography.fontSize.lg,
+        fontWeight: typography.fontWeight.bold,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     row: {
         flexDirection: 'row',
@@ -126,11 +133,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: spacing.md,
         borderRadius: borderRadius.lg,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        borderWidth: 1,
     },
     cardHeader: {
         flexDirection: 'row',

@@ -26,7 +26,7 @@ export const AssetDetailScreen = ({ route }: any) => {
     const [timeRange, setTimeRange] = useState<TimeRange>('1M');
     const [chartType, setChartType] = useState<ChartType>('line');
 
-    const colorScheme = useColorScheme() ?? 'light';
+    const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
 
     const { data: quote, isLoading: quoteLoading } = useAssetQuote(
@@ -104,21 +104,21 @@ export const AssetDetailScreen = ({ route }: any) => {
             ) : timeSeries && timeSeries.data.length > 0 ? (
                 <>
                     <View style={styles.chartSection}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={[styles.sectionIcon]}>📈</Text>
+                        <View style={[styles.sectionHeader, { borderBottomColor: theme.border }]}>
                             <Text style={[styles.chartTitle, { color: theme.text }]}>
                                 Price Chart
                             </Text>
+                            <View style={[styles.sectionDivider, { backgroundColor: theme.primary }]} />
                         </View>
                         {renderChart()}
                     </View>
 
                     <View style={styles.chartSection}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={[styles.sectionIcon]}>📊</Text>
+                        <View style={[styles.sectionHeader, { borderBottomColor: theme.border }]}>
                             <Text style={[styles.chartTitle, { color: theme.text }]}>
                                 Volume
                             </Text>
+                            <View style={[styles.sectionDivider, { backgroundColor: theme.primary }]} />
                         </View>
                         <VolumeChart data={timeSeries.data} />
                     </View>
@@ -182,18 +182,24 @@ const styles = StyleSheet.create({
         marginTop: spacing.lg,
     },
     sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
         paddingHorizontal: spacing.md,
-        marginBottom: spacing.sm,
+        paddingBottom: spacing.sm,
+        marginBottom: spacing.md,
+        borderBottomWidth: 1,
     },
-    sectionIcon: {
-        fontSize: 20,
-        marginRight: spacing.xs,
+    sectionDivider: {
+        position: 'absolute',
+        bottom: -1,
+        left: spacing.md,
+        width: 60,
+        height: 3,
+        borderRadius: 2,
     },
     chartTitle: {
-        fontSize: typography.fontSize.xl,
+        fontSize: typography.fontSize.lg,
         fontWeight: typography.fontWeight.bold,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     loadingContainer: {
         padding: spacing.xl,

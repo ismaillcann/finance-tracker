@@ -15,13 +15,13 @@ export const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
     selected,
     onSelect,
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
+    const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
 
-    const chartTypes: { value: ChartType; label: string; icon: string }[] = [
-        { value: 'line', label: 'Line', icon: '📈' },
-        { value: 'area', label: 'Area', icon: '📊' },
-        { value: 'candle', label: 'Candle', icon: '🕯️' },
+    const chartTypes: { value: ChartType; label: string }[] = [
+        { value: 'line', label: 'Line' },
+        { value: 'area', label: 'Area' },
+        { value: 'candle', label: 'Candle' },
     ];
 
     return (
@@ -35,12 +35,11 @@ export const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
                             styles.button,
                             {
                                 backgroundColor: isSelected ? theme.primary : 'transparent',
-                                borderColor: theme.border,
+                                borderColor: isSelected ? theme.primary : theme.border,
                             },
                         ]}
                         onPress={() => onSelect(type.value)}
                         activeOpacity={0.7}>
-                        <Text style={styles.icon}>{type.icon}</Text>
                         <Text
                             style={[
                                 styles.label,
