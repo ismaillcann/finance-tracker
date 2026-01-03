@@ -9,14 +9,14 @@ import {
 import {
     VictoryChart,
     VictoryLine,
-    VictoryAxis,
-    VictoryTheme,
     VictoryScatter,
+    VictoryZoomContainer,
+    VictoryTheme,
+    VictoryAxis,
 } from 'victory-native';
 import { CandlestickData } from '../../types';
 import { colors } from '../../theme/colors';
 import { formatPrice } from '../../utils/formatters';
-import { useChartTouch } from '../../hooks/useChartTouch';
 
 interface LineChartProps {
     data: CandlestickData[];
@@ -31,6 +31,7 @@ export const LineChart: React.FC<LineChartProps> = ({
 }) => {
     const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
+    const [activePoint, setActivePoint] = React.useState<any>(null);
 
     const chartData = data.map(item => ({
         x: new Date(item.timestamp),
@@ -39,11 +40,6 @@ export const LineChart: React.FC<LineChartProps> = ({
 
     const minPrice = Math.min(...data.map(d => d.low));
     const maxPrice = Math.max(...data.map(d => d.high));
-
-    const { activePoint, panResponder } = useChartTouch({
-        data: chartData,
-        width,
-    });
 
     return (
         <View style={styles.container}>
@@ -61,58 +57,62 @@ export const LineChart: React.FC<LineChartProps> = ({
                     </Text>
                 </View>
             )}
-            <View {...panResponder.panHandlers}>
-                <VictoryChart
-                    width={width}
-                    height={height}
-                    theme={VictoryTheme.material}
-                    padding={{ top: 20, bottom: 40, left: 60, right: 20 }}
-                    domain={{ y: [minPrice * 0.99, maxPrice * 1.01] }}>
-                    <VictoryAxis
-                        style={{
-                            axis: { stroke: theme.border },
-                            tickLabels: { fill: theme.textSecondary, fontSize: 10 },
-                            grid: { stroke: theme.border, strokeDasharray: '4,4' },
-                        }}
-                        tickFormat={t => {
-                            const date = new Date(t);
-                            return `${date.getMonth() + 1}/${date.getDate()}`;
-                        }}
+            <VictoryChart
+                width={width}
+                height={height}
+                theme={VictoryTheme.material}
+                padding={{ top: 20, bottom: 40, left: 60, right: 20 }}
+                domain={{ y: [minPrice * 0.99, maxPrice * 1.01] }}
+                containerComponent={
+                    <VictoryZoomContainer
+                        zoomDimension="x"
+                        zoomDomain={{ x: [chartData[Math.floor(chartData.length * 0.75)].x, chartData[chartData.length - 1].x] }}
                     />
-                    <VictoryAxis
-                        dependentAxis
-                        style={{
-                            axis: { stroke: theme.border },
-                            tickLabels: { fill: theme.textSecondary, fontSize: 10 },
-                            grid: { stroke: theme.border, strokeDasharray: '4,4' },
-                        }}
-                        tickFormat={t => formatPrice(t).replace('$', '')}
-                    />
-                    <VictoryLine
-                        data={chartData}
+                }>
+                <VictoryAxis
+                    style={{
+                        axis: { stroke: theme.border },
+                        tickLabels: { fill: theme.textSecondary, fontSize: 10 },
+                        grid: { stroke: theme.border, strokeDasharray: '4,4' },
+                    }}
+                    tickFormat={t => {
+                        const date = new Date(t);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                    }}
+                />
+                <VictoryAxis
+                    dependentAxis
+                    style={{
+                        axis: { stroke: theme.border },
+                        tickLabels: { fill: theme.textSecondary, fontSize: 10 },
+                        grid: { stroke: theme.border, strokeDasharray: '4,4' },
+                    }}
+                    tickFormat={t => formatPrice(t).replace('$', '')}
+                />
+                <VictoryLine
+                    data={chartData}
+                    style={{
+                        data: {
+                            stroke: theme.chart.line,
+                            strokeWidth: 2,
+                        },
+                    }}
+                    interpolation="monotoneX"
+                />
+                {activePoint && (
+                    <VictoryScatter
+                        data={[activePoint]}
+                        size={6}
                         style={{
                             data: {
-                                stroke: theme.chart.line,
+                                fill: theme.primary,
+                                stroke: theme.background,
                                 strokeWidth: 2,
                             },
                         }}
-                        interpolation="monotoneX"
                     />
-                    {activePoint && (
-                        <VictoryScatter
-                            data={[activePoint]}
-                            size={6}
-                            style={{
-                                data: {
-                                    fill: theme.primary,
-                                    stroke: theme.background,
-                                    strokeWidth: 2,
-                                },
-                            }}
-                        />
-                    )}
-                </VictoryChart>
-            </View>
+                )}
+            </VictoryChart>
         </View>
     );
 };

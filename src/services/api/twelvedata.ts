@@ -13,14 +13,12 @@ export const getQuote = async (symbol: string): Promise<Quote | null> => {
     }
 
     try {
-        const response = await twelveDataClient.get('/quote', {
+        const data = await twelveDataClient.get<any>('/quote', {
             params: {
                 symbol,
                 apikey: API_KEY,
             },
         });
-
-        const data = response.data;
 
         if (!data || data.status === 'error') {
             console.warn(`[TwelveData] API error for ${symbol}, using mock data`);
@@ -55,12 +53,13 @@ export const getTimeSeries = async (
     if (USE_MOCK_DATA) {
         return {
             symbol,
+            interval: interval as any,
             data: getMockTimeSeries(symbol, outputsize),
         };
     }
 
     try {
-        const response = await twelveDataClient.get('/time_series', {
+        const data = await twelveDataClient.get<any>('/time_series', {
             params: {
                 symbol,
                 interval,
@@ -69,12 +68,11 @@ export const getTimeSeries = async (
             },
         });
 
-        const data = response.data;
-
         if (!data || !data.values || data.status === 'error') {
             console.warn(`[TwelveData] API error for ${symbol} time series, using mock data`);
             return {
                 symbol,
+                interval: interval as any,
                 data: getMockTimeSeries(symbol, outputsize),
             };
         }
@@ -90,12 +88,14 @@ export const getTimeSeries = async (
 
         return {
             symbol,
+            interval: interval as any,
             data: candlestickData,
         };
     } catch (error: any) {
         console.warn(`[TwelveData] Error fetching time series for ${symbol}:`, error.message);
         return {
             symbol,
+            interval: interval as any,
             data: getMockTimeSeries(symbol, outputsize),
         };
     }
@@ -108,14 +108,12 @@ export const searchAssets = async (query: string): Promise<Asset[]> => {
     }
 
     try {
-        const response = await twelveDataClient.get('/symbol_search', {
+        const data = await twelveDataClient.get<any>('/symbol_search', {
             params: {
                 symbol: query,
                 apikey: API_KEY,
             },
         });
-
-        const data = response.data;
 
         if (!data || !data.data) {
             return [];

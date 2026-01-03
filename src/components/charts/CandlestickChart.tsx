@@ -11,11 +11,11 @@ import {
     VictoryCandlestick,
     VictoryAxis,
     VictoryTheme,
+    VictoryZoomContainer,
 } from 'victory-native';
 import { CandlestickData } from '../../types';
 import { colors } from '../../theme/colors';
 import { formatPrice } from '../../utils/formatters';
-import { useChartTouch } from '../../hooks/useChartTouch';
 
 interface CandlestickChartProps {
     data: CandlestickData[];
@@ -30,6 +30,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
 }) => {
     const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
+    const [activePoint, setActivePoint] = React.useState<any>(null);
 
     const chartData = data.map(item => ({
         x: new Date(item.timestamp),
@@ -41,11 +42,6 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
 
     const minPrice = Math.min(...data.map(d => d.low));
     const maxPrice = Math.max(...data.map(d => d.high));
-
-    const { activePoint, panResponder } = useChartTouch({
-        data: chartData,
-        width,
-    });
 
     return (
         <View style={styles.container}>
@@ -84,46 +80,50 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
                     </Text>
                 </View>
             )}
-            <View {...panResponder.panHandlers}>
-                <VictoryChart
-                    width={width}
-                    height={height}
-                    theme={VictoryTheme.material}
-                    padding={{ top: 20, bottom: 40, left: 60, right: 20 }}
-                    domain={{ y: [minPrice * 0.99, maxPrice * 1.01] }}>
-                    <VictoryAxis
-                        style={{
-                            axis: { stroke: theme.border },
-                            tickLabels: { fill: theme.textSecondary, fontSize: 10 },
-                            grid: { stroke: theme.border, strokeDasharray: '4,4' },
-                        }}
-                        tickFormat={t => {
-                            const date = new Date(t);
-                            return `${date.getMonth() + 1}/${date.getDate()}`;
-                        }}
+            <VictoryChart
+                width={width}
+                height={height}
+                theme={VictoryTheme.material}
+                padding={{ top: 20, bottom: 40, left: 60, right: 20 }}
+                domain={{ y: [minPrice * 0.99, maxPrice * 1.01] }}
+                containerComponent={
+                    <VictoryZoomContainer
+                        zoomDimension="x"
+                        zoomDomain={{ x: [chartData[Math.floor(chartData.length * 0.75)].x, chartData[chartData.length - 1].x] }}
                     />
-                    < VictoryAxis
-                        dependentAxis
-                        style={{
-                            axis: { stroke: theme.border },
-                            tickLabels: { fill: theme.textSecondary, fontSize: 10 },
-                            grid: { stroke: theme.border, strokeDasharray: '4,4' },
-                        }}
-                        tickFormat={t => formatPrice(t).replace('$', '')}
-                    />
-                    <VictoryCandlestick
-                        data={chartData}
-                        candleColors={{ positive: theme.success, negative: theme.error }}
-                        style={{
-                            data: {
-                                strokeWidth: 1,
-                            },
-                        }}
-                        candleWidth={6}
-                    />
-                </VictoryChart >
-            </View >
-        </View >
+                }>
+                <VictoryAxis
+                    style={{
+                        axis: { stroke: theme.border },
+                        tickLabels: { fill: theme.textSecondary, fontSize: 10 },
+                        grid: { stroke: theme.border, strokeDasharray: '4,4' },
+                    }}
+                    tickFormat={t => {
+                        const date = new Date(t);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                    }}
+                />
+                <VictoryAxis
+                    dependentAxis
+                    style={{
+                        axis: { stroke: theme.border },
+                        tickLabels: { fill: theme.textSecondary, fontSize: 10 },
+                        grid: { stroke: theme.border, strokeDasharray: '4,4' },
+                    }}
+                    tickFormat={t => formatPrice(t).replace('$', '')}
+                />
+                <VictoryCandlestick
+                    data={chartData}
+                    candleColors={{ positive: theme.success, negative: theme.error }}
+                    style={{
+                        data: {
+                            strokeWidth: 1,
+                        },
+                    }}
+                    candleWidth={6}
+                />
+            </VictoryChart>
+        </View>
     );
 };
 

@@ -4,7 +4,7 @@ import Config from 'react-native-config';
 import { getMockQuoteForSymbol } from './mockData';
 
 const API_KEY = Config.COINGECKO_API_KEY || '';
-const USE_MOCK_DATA = !API_KEY || API_KEY === 'your_coingecko_api_key_here';
+const USE_MOCK_DATA = false; // CoinGecko public API is free to use without key
 
 // CoinGecko API response types
 interface CoinGeckoMarketData {
