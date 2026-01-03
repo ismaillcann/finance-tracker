@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { Quote, TimeSeriesData, Asset } from '../types';
+import { Quote, TimeSeriesData, Asset, AssetType } from '../types';
 import { getQuote, getTimeSeries, searchAssets } from '../services/api/twelvedata';
 import { getCoinPrice, searchCoins } from '../services/api/coingecko';
 import {
@@ -10,7 +10,7 @@ import type { TimeRange } from '../types';
 
 export const useAssetQuote = (
     symbol: string,
-    type: 'stock' | 'crypto',
+    type: AssetType,
     coinId?: string,
 ): UseQueryResult<Quote | null> => {
     return useQuery({
