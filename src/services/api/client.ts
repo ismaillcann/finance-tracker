@@ -28,8 +28,8 @@ class ApiClient {
         );
     }
 
-    async get<T>(url: string, params?: any): Promise<T> {
-        const response = await this.client.get<T>(url, { params });
+    async get<T>(url: string, config?: any): Promise<T> {
+        const response = await this.client.get<T>(url, config);
         return response.data;
     }
 

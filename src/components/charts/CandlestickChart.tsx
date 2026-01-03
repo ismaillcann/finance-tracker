@@ -28,7 +28,7 @@ export const CandlestickChart: React.FC<CandlestickChartProps> = ({
     width = Dimensions.get('window').width - 32,
     height = 300,
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
+    const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
 
     const chartData = data.map(item => ({

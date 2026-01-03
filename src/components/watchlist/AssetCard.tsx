@@ -32,7 +32,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     onRemove,
     showDelete = false,
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
+    const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
     const scaleAnim = useRef(new Animated.Value(1)).current;
 

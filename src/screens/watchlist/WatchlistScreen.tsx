@@ -8,6 +8,7 @@ import {
     RefreshControl,
     TouchableOpacity,
     Alert,
+    Modal,
 } from 'react-native';
 import { AssetCard } from '../../components/watchlist/AssetCard';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -20,6 +21,7 @@ import { WatchlistItem } from '../../types';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { borderRadius } from '../../theme/spacing';
 
 const WatchlistItemWithPrice: React.FC<{
     item: WatchlistItem;
@@ -47,8 +49,9 @@ export const WatchlistScreen = ({ navigation }: any) => {
     const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [showSignOutModal, setShowSignOutModal] = useState(false);
 
-    const colorScheme = useColorScheme() ?? 'light';
+    const colorScheme: 'light' | 'dark' = useColorScheme() === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
 
     const user = getCurrentUser();
@@ -74,8 +77,17 @@ export const WatchlistScreen = ({ navigation }: any) => {
         setRefreshing(false);
     };
 
-    const handleSignOut = async () => {
+    const handleSignOutPress = () => {
+        setShowSignOutModal(true);
+    };
+
+    const handleConfirmSignOut = async () => {
+        setShowSignOutModal(false);
         await signOut();
+    };
+
+    const handleCancelSignOut = () => {
+        setShowSignOutModal(false);
     };
 
     const handleAssetPress = (item: WatchlistItem) => {
@@ -99,6 +111,12 @@ export const WatchlistScreen = ({ navigation }: any) => {
         }
     };
 
+    // Get user initials for avatar
+    const getUserInitials = () => {
+        if (!user?.email) return '?';
+        return user.email.charAt(0).toUpperCase();
+    };
+
     if (loading) {
         return (
             <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -109,22 +127,42 @@ export const WatchlistScreen = ({ navigation }: any) => {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <View style={styles.header}>
-                <View>
-                    <Text style={[styles.greeting, { color: theme.text }]}>
-                        Welcome back!
-                    </Text>
-                    {user && (
-                        <Text style={[styles.email, { color: theme.textSecondary }]}>
-                            {user.email}
-                        </Text>
-                    )}
+            {/* Professional Header */}
+            <View style={[styles.headerContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <View style={styles.headerTop}>
+                    <View style={styles.userSection}>
+                        <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+                            <Text style={styles.avatarText}>{getUserInitials()}</Text>
+                        </View>
+                        <View style={styles.userDetails}>
+                            <Text style={[styles.userName, { color: theme.text }]}>
+                                {user?.email?.split('@')[0] || 'User'}
+                            </Text>
+                            <Text style={[styles.userEmail, { color: theme.textSecondary }]}>
+                                {user?.email}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={handleSignOutPress}
+                        style={[styles.signOutButton, { borderColor: theme.border }]}
+                        activeOpacity={0.7}>
+                        <Text style={[styles.signOutText, { color: theme.textSecondary }]}>Sign Out</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={handleSignOut}>
-                    <Text style={[styles.signOutButton, { color: theme.error }]}>
-                        Sign Out
-                    </Text>
-                </TouchableOpacity>
+
+                {/* Stats Cards */}
+                <View style={styles.statsContainer}>
+                    <View style={[styles.statCard, { backgroundColor: theme.background, borderColor: theme.border }]}>
+                        <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Total Assets</Text>
+                        <Text style={[styles.statValue, { color: theme.text }]}>{watchlist.length}</Text>
+                    </View>
+                    <View style={[styles.statCard, { backgroundColor: theme.background, borderColor: theme.border }]}>
+                        <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Status</Text>
+                        <Text style={[styles.statValue, { color: theme.success }]}>Active</Text>
+                    </View>
+                </View>
             </View>
 
             {watchlist.length === 0 ? (
@@ -161,6 +199,42 @@ export const WatchlistScreen = ({ navigation }: any) => {
                     style={styles.addButton}
                 />
             </View>
+
+            {/* Sign Out Confirmation Modal */}
+            <Modal
+                visible={showSignOutModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={handleCancelSignOut}>
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+                        <Text style={[styles.modalTitle, { color: theme.text }]}>
+                            Sign Out
+                        </Text>
+                        <Text style={[styles.modalMessage, { color: theme.textSecondary }]}>
+                            Are you sure you want to sign out?
+                        </Text>
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.cancelButton, { backgroundColor: theme.border }]}
+                                onPress={handleCancelSignOut}
+                                activeOpacity={0.7}>
+                                <Text style={[styles.modalButtonText, { color: theme.text }]}>
+                                    Cancel
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.confirmButton, { backgroundColor: theme.error, marginLeft: spacing.sm }]}
+                                onPress={handleConfirmSignOut}
+                                activeOpacity={0.7}>
+                                <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                                    Sign Out
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -169,24 +243,80 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    header: {
+    headerContainer: {
+        paddingTop: spacing.xl + 10,
+        paddingBottom: spacing.md,
+        borderBottomWidth: 1,
+    },
+    headerTop: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: spacing.md,
-        paddingTop: spacing.lg,
+        paddingHorizontal: spacing.md,
+        marginBottom: spacing.md,
     },
-    greeting: {
-        fontSize: typography.fontSize.xl,
+    userSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    avatar: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: spacing.sm,
+    },
+    avatarText: {
+        fontSize: 18,
         fontWeight: typography.fontWeight.bold,
+        color: '#fff',
     },
-    email: {
-        fontSize: typography.fontSize.sm,
-        marginTop: spacing.xs / 2,
+    userDetails: {
+        flex: 1,
+    },
+    userName: {
+        fontSize: typography.fontSize.lg,
+        fontWeight: typography.fontWeight.bold,
+        marginBottom: 2,
+        textTransform: 'capitalize',
+    },
+    userEmail: {
+        fontSize: typography.fontSize.xs,
     },
     signOutButton: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        borderRadius: borderRadius.md,
+        borderWidth: 1,
+    },
+    signOutText: {
         fontSize: typography.fontSize.sm,
         fontWeight: typography.fontWeight.medium,
+    },
+    statsContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: spacing.md,
+        marginLeft: -spacing.xs / 2,
+    },
+    statCard: {
+        flex: 1,
+        padding: spacing.md,
+        borderRadius: borderRadius.lg,
+        borderWidth: 1,
+        marginLeft: spacing.xs / 2,
+        marginRight: spacing.xs / 2,
+    },
+    statLabel: {
+        fontSize: typography.fontSize.xs,
+        marginBottom: 4,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    statValue: {
+        fontSize: typography.fontSize.xl,
+        fontWeight: typography.fontWeight.bold,
     },
     listContent: {
         padding: spacing.md,
@@ -196,5 +326,55 @@ const styles = StyleSheet.create({
     },
     addButton: {
         width: '100%',
+    },
+    // Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: spacing.md,
+    },
+    modalContent: {
+        width: '100%',
+        maxWidth: 400,
+        borderRadius: borderRadius.xl,
+        padding: spacing.lg,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 10,
+    },
+    modalTitle: {
+        fontSize: typography.fontSize.xxl,
+        fontWeight: typography.fontWeight.bold,
+        marginBottom: spacing.sm,
+        textAlign: 'center',
+    },
+    modalMessage: {
+        fontSize: typography.fontSize.md,
+        textAlign: 'center',
+        marginBottom: spacing.lg,
+        lineHeight: 22,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+    },
+    modalButton: {
+        flex: 1,
+        paddingVertical: spacing.md,
+        borderRadius: borderRadius.lg,
+        alignItems: 'center',
+    },
+    cancelButton: {
+        // backgroundColor set dynamically
+    },
+    confirmButton: {
+        // backgroundColor set dynamically
+    },
+    modalButtonText: {
+        fontSize: typography.fontSize.md,
+        fontWeight: typography.fontWeight.semibold,
     },
 });

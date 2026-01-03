@@ -6,6 +6,31 @@ import { getMockQuoteForSymbol } from './mockData';
 const API_KEY = Config.COINGECKO_API_KEY || '';
 const USE_MOCK_DATA = !API_KEY || API_KEY === 'your_coingecko_api_key_here';
 
+// CoinGecko API response types
+interface CoinGeckoMarketData {
+    current_price: { usd: number };
+    price_change_24h: number;
+    price_change_percentage_24h: number;
+    high_24h?: { usd: number };
+    low_24h?: { usd: number };
+    total_volume?: { usd: number };
+}
+
+interface CoinGeckoCoinResponse {
+    symbol: string;
+    market_data: CoinGeckoMarketData;
+}
+
+interface CoinGeckoSearchCoin {
+    id: string;
+    symbol: string;
+    name: string;
+}
+
+interface CoinGeckoSearchResponse {
+    coins: CoinGeckoSearchCoin[];
+}
+
 export const getCoinPrice = async (coinId: string): Promise<Quote | null> => {
     // Use mock data if no API key
     if (USE_MOCK_DATA) {
@@ -14,7 +39,7 @@ export const getCoinPrice = async (coinId: string): Promise<Quote | null> => {
     }
 
     try {
-        const response = await coinGeckoClient.get(`/coins/${coinId}`, {
+        const data = await coinGeckoClient.get<CoinGeckoCoinResponse>(`/coins/${coinId}`, {
             params: {
                 localization: false,
                 tickers: false,
@@ -24,8 +49,6 @@ export const getCoinPrice = async (coinId: string): Promise<Quote | null> => {
             },
             headers: API_KEY ? { 'x-cg-demo-api-key': API_KEY } : {},
         });
-
-        const data = response.data;
 
         if (!data || !data.market_data) {
             console.warn(`[CoinGecko] No market data for ${coinId}, using mock`);
@@ -38,7 +61,6 @@ export const getCoinPrice = async (coinId: string): Promise<Quote | null> => {
             data.market_data.price_change_percentage_24h || 0;
 
         return {
-            symbol: data.symbol.toUpperCase(),
             price: currentPrice,
             change: priceChange24h,
             changePercent: priceChangePercent24h,
@@ -63,22 +85,20 @@ export const searchCoins = async (query: string): Promise<Asset[]> => {
     }
 
     try {
-        const response = await coinGeckoClient.get('/search', {
+        const data = await coinGeckoClient.get<CoinGeckoSearchResponse>('/search', {
             params: { query },
             headers: API_KEY ? { 'x-cg-demo-api-key': API_KEY } : {},
         });
-
-        const data = response.data;
 
         if (!data || !data.coins) {
             return [];
         }
 
-        return data.coins.slice(0, 10).map((coin: any) => ({
+        return data.coins.slice(0, 10).map((coin) => ({
             id: coin.id,
             symbol: coin.symbol.toUpperCase(),
             name: coin.name,
-            type: 'crypto',
+            type: 'crypto' as const,
             currency: 'USD',
         }));
     } catch (error: any) {
