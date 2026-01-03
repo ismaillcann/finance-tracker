@@ -9,7 +9,6 @@ const USE_MOCK_DATA = !API_KEY || API_KEY === 'your_coingecko_api_key_here';
 export const getCoinPrice = async (coinId: string): Promise<Quote | null> => {
     // Use mock data if no API key
     if (USE_MOCK_DATA) {
-        console.log(`[CoinGecko] Using mock data for ${coinId}`);
         const symbol = coinId === 'bitcoin' ? 'BTC' : coinId === 'ethereum' ? 'ETH' : coinId.toUpperCase();
         return getMockQuoteForSymbol(symbol);
     }

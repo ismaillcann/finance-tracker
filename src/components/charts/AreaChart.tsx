@@ -1,11 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import {
     View,
     StyleSheet,
     Dimensions,
     useColorScheme,
     Text,
-    PanResponder,
 } from 'react-native';
 import {
     VictoryChart,
@@ -17,6 +16,7 @@ import {
 import { CandlestickData } from '../../types';
 import { colors } from '../../theme/colors';
 import { formatPrice } from '../../utils/formatters';
+import { useChartTouch } from '../../hooks/useChartTouch';
 
 interface AreaChartProps {
     data: CandlestickData[];
@@ -31,7 +31,6 @@ export const AreaChart: React.FC<AreaChartProps> = ({
 }) => {
     const colorScheme = useColorScheme() ?? 'light';
     const theme = colors[colorScheme];
-    const [activePoint, setActivePoint] = useState<any>(null);
 
     const chartData = data.map(item => ({
         x: new Date(item.timestamp),
@@ -41,40 +40,10 @@ export const AreaChart: React.FC<AreaChartProps> = ({
     const minPrice = Math.min(...data.map(d => d.low));
     const maxPrice = Math.max(...data.map(d => d.high));
 
-    // PanResponder for touch handling
-    const panResponder = useRef(
-        PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onMoveShouldSetPanResponder: () => true,
-            onPanResponderGrant: (evt) => {
-                const touchX = evt.nativeEvent.locationX;
-                findNearestPoint(touchX);
-            },
-            onPanResponderMove: (evt) => {
-                const touchX = evt.nativeEvent.locationX;
-                findNearestPoint(touchX);
-            },
-            onPanResponderRelease: () => {
-                setActivePoint(null);
-            },
-        }),
-    ).current;
-
-    const findNearestPoint = (touchX: number) => {
-        const padding = { left: 60, right: 20 };
-        const chartWidth = width - padding.left - padding.right;
-        const adjustedX = touchX - padding.left;
-
-        if (adjustedX < 0 || adjustedX > chartWidth) {
-            setActivePoint(null);
-            return;
-        }
-
-        const index = Math.round((adjustedX / chartWidth) * (chartData.length - 1));
-        const clampedIndex = Math.max(0, Math.min(index, chartData.length - 1));
-
-        setActivePoint(chartData[clampedIndex]);
-    };
+    const { activePoint, panResponder } = useChartTouch({
+        data: chartData,
+        width,
+    });
 
     return (
         <View style={styles.container}>

@@ -9,7 +9,6 @@ const USE_MOCK_DATA = !API_KEY || API_KEY === 'your_twelvedata_api_key_here';
 export const getQuote = async (symbol: string): Promise<Quote | null> => {
     // Use mock data if no API key
     if (USE_MOCK_DATA) {
-        console.log(`[TwelveData] Using mock data for ${symbol}`);
         return getMockQuoteForSymbol(symbol);
     }
 
@@ -54,7 +53,6 @@ export const getTimeSeries = async (
 ): Promise<TimeSeriesData | null> => {
     // Use mock data if no API key
     if (USE_MOCK_DATA) {
-        console.log(`[TwelveData] Using mock time series for ${symbol}`);
         return {
             symbol,
             data: getMockTimeSeries(symbol, outputsize),

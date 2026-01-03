@@ -36,7 +36,6 @@ export const addToWatchlist = async (
             .get();
 
         if (!existing.empty) {
-            console.log('[Firestore] Asset already in watchlist');
             return false;
         }
 
