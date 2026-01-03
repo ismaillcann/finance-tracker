@@ -17,6 +17,7 @@ export const getUserWatchlist = async (
             userId: doc.data().userId,
             asset: doc.data().asset,
             addedAt: doc.data().addedAt,
+            order: doc.data().order,
         }));
     } catch (error) {
         console.error('[Firestore] Error fetching watchlist:', error);
@@ -40,10 +41,12 @@ export const addToWatchlist = async (
         }
 
         // Add new asset
+        const timestamp = Date.now();
         await watchlistsCollection.add({
             userId,
             asset,
-            addedAt: Date.now(),
+            addedAt: timestamp,
+            order: timestamp,
         });
 
         return true;
@@ -79,6 +82,7 @@ export const watchWatchlist = (
                     userId: doc.data().userId,
                     asset: doc.data().asset,
                     addedAt: doc.data().addedAt,
+                    order: doc.data().order,
                 }));
                 callback(items);
             },
