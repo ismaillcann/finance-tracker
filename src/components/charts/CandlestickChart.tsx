@@ -9,22 +9,21 @@ import {
 } from 'react-native';
 import {
     VictoryChart,
-    VictoryLine,
+    VictoryCandlestick,
     VictoryAxis,
     VictoryTheme,
-    VictoryScatter,
 } from 'victory-native';
 import { CandlestickData } from '../../types';
 import { colors } from '../../theme/colors';
 import { formatPrice } from '../../utils/formatters';
 
-interface LineChartProps {
+interface CandlestickChartProps {
     data: CandlestickData[];
     width?: number;
     height?: number;
 }
 
-export const LineChart: React.FC<LineChartProps> = ({
+export const CandlestickChart: React.FC<CandlestickChartProps> = ({
     data,
     width = Dimensions.get('window').width - 32,
     height = 300,
@@ -35,7 +34,10 @@ export const LineChart: React.FC<LineChartProps> = ({
 
     const chartData = data.map(item => ({
         x: new Date(item.timestamp),
-        y: item.close,
+        open: item.open,
+        close: item.close,
+        high: item.high,
+        low: item.low,
     }));
 
     const minPrice = Math.min(...data.map(d => d.low));
@@ -61,11 +63,8 @@ export const LineChart: React.FC<LineChartProps> = ({
     ).current;
 
     const findNearestPoint = (touchX: number) => {
-        // Chart padding and dimensions
         const padding = { left: 60, right: 20 };
         const chartWidth = width - padding.left - padding.right;
-
-        // Adjust touch position for padding
         const adjustedX = touchX - padding.left;
 
         if (adjustedX < 0 || adjustedX > chartWidth) {
@@ -73,7 +72,6 @@ export const LineChart: React.FC<LineChartProps> = ({
             return;
         }
 
-        // Find nearest data point
         const index = Math.round((adjustedX / chartWidth) * (chartData.length - 1));
         const clampedIndex = Math.max(0, Math.min(index, chartData.length - 1));
 
@@ -84,9 +82,30 @@ export const LineChart: React.FC<LineChartProps> = ({
         <View style={styles.container}>
             {activePoint && (
                 <View style={[styles.tooltipContainer, { backgroundColor: theme.card }]}>
-                    <Text style={[styles.tooltipPrice, { color: theme.text }]}>
-                        {formatPrice(activePoint.y)}
-                    </Text>
+                    <View style={styles.tooltipRow}>
+                        <Text style={[styles.tooltipLabel, { color: theme.textSecondary }]}>O:</Text>
+                        <Text style={[styles.tooltipValue, { color: theme.text }]}>
+                            {formatPrice(activePoint.open)}
+                        </Text>
+                    </View>
+                    <View style={styles.tooltipRow}>
+                        <Text style={[styles.tooltipLabel, { color: theme.textSecondary }]}>H:</Text>
+                        <Text style={[styles.tooltipValue, { color: theme.success }]}>
+                            {formatPrice(activePoint.high)}
+                        </Text>
+                    </View>
+                    <View style={styles.tooltipRow}>
+                        <Text style={[styles.tooltipLabel, { color: theme.textSecondary }]}>L:</Text>
+                        <Text style={[styles.tooltipValue, { color: theme.error }]}>
+                            {formatPrice(activePoint.low)}
+                        </Text>
+                    </View>
+                    <View style={styles.tooltipRow}>
+                        <Text style={[styles.tooltipLabel, { color: theme.textSecondary }]}>C:</Text>
+                        <Text style={[styles.tooltipValue, { color: theme.text }]}>
+                            {formatPrice(activePoint.close)}
+                        </Text>
+                    </View>
                     <Text style={[styles.tooltipDate, { color: theme.textSecondary }]}>
                         {new Date(activePoint.x).toLocaleDateString('en-US', {
                             month: 'short',
@@ -123,29 +142,16 @@ export const LineChart: React.FC<LineChartProps> = ({
                         }}
                         tickFormat={t => formatPrice(t).replace('$', '')}
                     />
-                    <VictoryLine
+                    <VictoryCandlestick
                         data={chartData}
+                        candleColors={{ positive: theme.success, negative: theme.error }}
                         style={{
                             data: {
-                                stroke: theme.chart.line,
-                                strokeWidth: 2,
+                                strokeWidth: 1,
                             },
                         }}
-                        interpolation="monotoneX"
+                        candleWidth={6}
                     />
-                    {activePoint && (
-                        <VictoryScatter
-                            data={[activePoint]}
-                            size={6}
-                            style={{
-                                data: {
-                                    fill: theme.primary,
-                                    stroke: theme.background,
-                                    strokeWidth: 2,
-                                },
-                            }}
-                        />
-                    )}
                 </VictoryChart>
             </View>
         </View>
@@ -161,7 +167,7 @@ const styles = StyleSheet.create({
         top: 10,
         alignSelf: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingVertical: 12,
         borderRadius: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -169,15 +175,25 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
         zIndex: 1000,
+        minWidth: 120,
     },
-    tooltipPrice: {
-        fontSize: 18,
+    tooltipRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 4,
+    },
+    tooltipLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        marginRight: 8,
+    },
+    tooltipValue: {
+        fontSize: 12,
         fontWeight: '700',
-        textAlign: 'center',
     },
     tooltipDate: {
-        fontSize: 12,
-        marginTop: 2,
+        fontSize: 10,
+        marginTop: 4,
         textAlign: 'center',
     },
 });

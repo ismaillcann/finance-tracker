@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
     View,
     Text,
@@ -6,6 +6,9 @@ import {
     TouchableOpacity,
     useColorScheme,
     Alert,
+    Animated,
+    Pressable,
+    Vibration,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Asset, PriceData } from '../../types';
@@ -31,11 +34,32 @@ export const AssetCard: React.FC<AssetCardProps> = ({
 }) => {
     const colorScheme = useColorScheme() ?? 'light';
     const theme = colors[colorScheme];
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+
+    const handlePressIn = () => {
+        Vibration.vibrate(10); // Light vibration
+        Animated.spring(scaleAnim, {
+            toValue: 0.97,
+            useNativeDriver: true,
+            speed: 50,
+            bounciness: 4,
+        }).start();
+    };
+
+    const handlePressOut = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            speed: 50,
+            bounciness: 4,
+        }).start();
+    };
 
     const isPositive = priceData ? priceData.changePercent >= 0 : true;
     const changeColor = isPositive ? theme.success : theme.error;
 
     const handleDelete = () => {
+        Vibration.vibrate(50); // Warning vibration
         Alert.alert(
             'Remove Asset',
             `Are you sure you want to remove ${asset.symbol} from your watchlist?`,
@@ -47,7 +71,10 @@ export const AssetCard: React.FC<AssetCardProps> = ({
                 {
                     text: 'Remove',
                     style: 'destructive',
-                    onPress: onRemove,
+                    onPress: () => {
+                        Vibration.vibrate([0, 50, 100, 50]); // Success pattern
+                        onRemove?.();
+                    },
                 },
             ],
         );
@@ -62,49 +89,52 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     );
 
     const cardContent = (
-        <TouchableOpacity
-            style={[styles.container, { backgroundColor: theme.surface }]}
-            onPress={onPress}
-            activeOpacity={0.7}>
-            <View style={styles.content}>
-                <View style={styles.leftSection}>
-                    <Text style={[styles.symbol, { color: theme.text }]}>
-                        {asset.symbol}
-                    </Text>
-                    <Text style={[styles.name, { color: theme.textSecondary }]}>
-                        {asset.name}
-                    </Text>
-                    {asset.exchange && (
-                        <Text style={[styles.exchange, { color: theme.textSecondary }]}>
-                            {asset.exchange}
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <Pressable
+                style={[styles.container, { backgroundColor: theme.surface }]}
+                onPress={onPress}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}>
+                <View style={styles.content}>
+                    <View style={styles.leftSection}>
+                        <Text style={[styles.symbol, { color: theme.text }]}>
+                            {asset.symbol}
                         </Text>
-                    )}
-                </View>
-
-                <View style={styles.rightSection}>
-                    {priceData ? (
-                        <>
-                            <Text style={[styles.price, { color: theme.text }]}>
-                                {formatPrice(priceData.price)}
+                        <Text style={[styles.name, { color: theme.textSecondary }]}>
+                            {asset.name}
+                        </Text>
+                        {asset.exchange && (
+                            <Text style={[styles.exchange, { color: theme.textSecondary }]}>
+                                {asset.exchange}
                             </Text>
-                            <View
-                                style={[
-                                    styles.changeContainer,
-                                    { backgroundColor: changeColor + '20' },
-                                ]}>
-                                <Text style={[styles.change, { color: changeColor }]}>
-                                    {formatPercent(priceData.changePercent)}
+                        )}
+                    </View>
+
+                    <View style={styles.rightSection}>
+                        {priceData ? (
+                            <>
+                                <Text style={[styles.price, { color: theme.text }]}>
+                                    {formatPrice(priceData.price)}
                                 </Text>
-                            </View>
-                        </>
-                    ) : (
-                        <Text style={[styles.loading, { color: theme.textSecondary }]}>
-                            Loading...
-                        </Text>
-                    )}
+                                <View
+                                    style={[
+                                        styles.changeContainer,
+                                        { backgroundColor: changeColor + '20' },
+                                    ]}>
+                                    <Text style={[styles.change, { color: changeColor }]}>
+                                        {formatPercent(priceData.changePercent)}
+                                    </Text>
+                                </View>
+                            </>
+                        ) : (
+                            <Text style={[styles.loading, { color: theme.textSecondary }]}>
+                                Loading...
+                            </Text>
+                        )}
+                    </View>
                 </View>
-            </View>
-        </TouchableOpacity>
+            </Pressable>
+        </Animated.View>
     );
 
     if (showDelete && onRemove) {

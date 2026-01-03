@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {
     VictoryChart,
-    VictoryLine,
+    VictoryArea,
     VictoryAxis,
     VictoryTheme,
     VictoryScatter,
@@ -18,13 +18,13 @@ import { CandlestickData } from '../../types';
 import { colors } from '../../theme/colors';
 import { formatPrice } from '../../utils/formatters';
 
-interface LineChartProps {
+interface AreaChartProps {
     data: CandlestickData[];
     width?: number;
     height?: number;
 }
 
-export const LineChart: React.FC<LineChartProps> = ({
+export const AreaChart: React.FC<AreaChartProps> = ({
     data,
     width = Dimensions.get('window').width - 32,
     height = 300,
@@ -61,11 +61,8 @@ export const LineChart: React.FC<LineChartProps> = ({
     ).current;
 
     const findNearestPoint = (touchX: number) => {
-        // Chart padding and dimensions
         const padding = { left: 60, right: 20 };
         const chartWidth = width - padding.left - padding.right;
-
-        // Adjust touch position for padding
         const adjustedX = touchX - padding.left;
 
         if (adjustedX < 0 || adjustedX > chartWidth) {
@@ -73,7 +70,6 @@ export const LineChart: React.FC<LineChartProps> = ({
             return;
         }
 
-        // Find nearest data point
         const index = Math.round((adjustedX / chartWidth) * (chartData.length - 1));
         const clampedIndex = Math.max(0, Math.min(index, chartData.length - 1));
 
@@ -123,10 +119,11 @@ export const LineChart: React.FC<LineChartProps> = ({
                         }}
                         tickFormat={t => formatPrice(t).replace('$', '')}
                     />
-                    <VictoryLine
+                    <VictoryArea
                         data={chartData}
                         style={{
                             data: {
+                                fill: theme.chart.line + '40', // 40 = 25% opacity in hex
                                 stroke: theme.chart.line,
                                 strokeWidth: 2,
                             },

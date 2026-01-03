@@ -2,7 +2,7 @@
 // To use real Firebase, replace './firestore.mock' with Firebase implementation
 // Switch between mock and real Firestore
 // For development with real Firebase, use:
-export * from './firestore.real';
+// export * from './firestore.real';
 
 // For development without Firebase, use:
-// export * from './firestore.mock';
+export * from './firestore.mock';
