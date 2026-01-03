@@ -29,8 +29,8 @@ export const AreaChart: React.FC<AreaChartProps> = ({
     width = Dimensions.get('window').width - 32,
     height = 300,
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     const chartData = data.map(item => ({
         x: new Date(item.timestamp),

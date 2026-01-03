@@ -61,6 +61,7 @@ export const getCoinPrice = async (coinId: string): Promise<Quote | null> => {
             data.market_data.price_change_percentage_24h || 0;
 
         return {
+            symbol: data.symbol.toUpperCase(),
             price: currentPrice,
             change: priceChange24h,
             changePercent: priceChangePercent24h,

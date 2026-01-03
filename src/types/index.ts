@@ -17,6 +17,7 @@ export interface PriceData {
 }
 
 export interface Quote extends PriceData {
+    symbol: string;
     open: number;
     high: number;
     low: number;

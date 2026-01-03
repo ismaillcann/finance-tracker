@@ -9,7 +9,8 @@ import { colors } from '../theme/colors';
 const Stack = createNativeStackNavigator();
 
 export const MainNavigator = () => {
-    const colorScheme = useColorScheme() ?? 'light';
+    const systemTheme = useColorScheme();
+    const colorScheme = systemTheme === 'dark' ? 'dark' : 'light';
     const theme = colors[colorScheme];
 
     return (

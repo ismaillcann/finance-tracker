@@ -16,8 +16,8 @@ export const VolumeChart: React.FC<VolumeChartProps> = ({
     width = Dimensions.get('window').width - 32,
     height = 150,
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     const chartData = data.map(item => ({
         x: new Date(item.timestamp),
