@@ -27,8 +27,8 @@ export const SearchScreen = ({ navigation }: any) => {
         'all',
     );
 
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     const { data: searchResults = [], isLoading } = useAssetSearch(
         query,

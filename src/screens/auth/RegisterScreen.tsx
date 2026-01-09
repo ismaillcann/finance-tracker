@@ -27,8 +27,8 @@ export const RegisterScreen = ({ navigation }: any) => {
         confirmPassword: '',
     });
 
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     const validateForm = (): boolean => {
         const newErrors = { email: '', password: '', confirmPassword: '' };

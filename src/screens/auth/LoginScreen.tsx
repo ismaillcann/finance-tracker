@@ -22,8 +22,8 @@ export const LoginScreen = ({ navigation }: any) => {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({ email: '', password: '' });
 
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     const validateForm = (): boolean => {
         const newErrors = { email: '', password: '' };
