@@ -57,16 +57,23 @@ export const WatchlistScreen = ({ navigation }: any) => {
     const user = getCurrentUser();
 
     useEffect(() => {
-        if (!user) return;
+        if (!user?.id) {
+            setWatchlist([]);
+            setLoading(false);
+            return;
+        }
 
+        setLoading(true);
         const unsubscribe = watchWatchlist(user.id, items => {
             setWatchlist(items);
             setLoading(false);
             setRefreshing(false);
         });
 
-        return unsubscribe;
-    }, [user]);
+        return () => {
+            unsubscribe();
+        };
+    }, [user?.id]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
