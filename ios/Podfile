@@ -31,5 +31,50 @@ target 'FinanceTracker' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    
+    # Fix ReactCommon modulemap redefinition issue - STRATEGY B: STUBBING
+    # React-RuntimeApple.modulemap and ReactCommon.modulemap both in same directory cause conflicts
+    # Solution: Overwrite React-RuntimeApple.modulemap with a dummy stub
+    # This satisfies the -fmodule-map-file flags (preventing "file not found")
+    # And avoids "Redefinition of module" (preventing the original error)
+    
+    runtime_apple_modulemap_real = File.join(installer.sandbox.root, 'Target Support Files/React-RuntimeApple/React-RuntimeApple.modulemap')
+    
+    # Create valid but empty module definition to satisfy the build system
+    # We use a unique module name 'React_RuntimeApple_Stub' so it doesn't conflict with anything
+    stub_content_apple = "module React_RuntimeApple_Stub {\n  // Stub to satisfy build flags while avoiding conflicts\n}\n"
+    
+    if File.exist?(runtime_apple_modulemap_real)
+      # Overwrite the file
+      File.write(runtime_apple_modulemap_real, stub_content_apple)
+      puts "Stubbed React-RuntimeApple.modulemap to prevent build errors"
+    end
+
+    # Also fix the symlink in Headers/Public if it exists
+    runtime_apple_modulemap_symlink = File.join(installer.sandbox.root, 'Headers/Public/ReactCommon/React-RuntimeApple.modulemap')
+    if File.exist?(runtime_apple_modulemap_symlink)
+        # Delete or overwrite. Overwriting is safer against stubborn build flags.
+        File.write(runtime_apple_modulemap_symlink, stub_content_apple)
+        puts "Stubbed React-RuntimeApple.modulemap symlink"
+    end
+
+    # Fix React-jsitooling modulemap redefinition issue
+    # React-jsitooling.modulemap also defines 'module react_runtime', conflicting with React-RuntimeCore
+    jsitooling_modulemap_real = File.join(installer.sandbox.root, 'Target Support Files/React-jsitooling/React-jsitooling.modulemap')
+    stub_content_jsi = "module React_jsitooling_stub {\n  // Stub to satisfy build flags while avoiding conflicts\n}\n"
+    
+    if File.exist?(jsitooling_modulemap_real)
+        File.write(jsitooling_modulemap_real, stub_content_jsi)
+        puts "Stubbed React-jsitooling.modulemap to prevent build errors"
+    end
+
+    jsitooling_modulemap_symlink = File.join(installer.sandbox.root, 'Headers/Public/react_runtime/React-jsitooling.modulemap')
+    if File.exist?(jsitooling_modulemap_symlink)
+        File.write(jsitooling_modulemap_symlink, stub_content_jsi)
+        puts "Stubbed React-jsitooling.modulemap symlink"
+    end
+    
+    # Clean up other specific issues
+    # (None currently - React-RuntimeHermes flags were removing as they caused ScanDependencies errors)
   end
 end
