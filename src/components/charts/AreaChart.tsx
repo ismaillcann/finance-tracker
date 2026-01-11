@@ -24,6 +24,8 @@ interface AreaChartProps {
     height?: number;
 }
 
+
+
 export const AreaChart: React.FC<AreaChartProps> = ({
     data,
     width = Dimensions.get('window').width - 32,
@@ -31,7 +33,6 @@ export const AreaChart: React.FC<AreaChartProps> = ({
 }) => {
     const colorScheme = useColorScheme();
     const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
-    const [activePoint, setActivePoint] = React.useState<any>(null);
 
     const chartData = data.map(item => ({
         x: new Date(item.timestamp),
@@ -41,22 +42,14 @@ export const AreaChart: React.FC<AreaChartProps> = ({
     const minPrice = Math.min(...data.map(d => d.low));
     const maxPrice = Math.max(...data.map(d => d.high));
 
+    // Determine color based on trend
+    const startPrice = chartData[0]?.y || 0;
+    const endPrice = chartData[chartData.length - 1]?.y || 0;
+    const isUp = endPrice >= startPrice;
+    const chartColor = isUp ? theme.chart.up : theme.chart.down;
+
     return (
         <View style={styles.container}>
-            {activePoint && (
-                <View style={[styles.tooltipContainer, { backgroundColor: theme.card }]}>
-                    <Text style={[styles.tooltipPrice, { color: theme.text }]}>
-                        {formatPrice(activePoint.y)}
-                    </Text>
-                    <Text style={[styles.tooltipDate, { color: theme.textSecondary }]}>
-                        {new Date(activePoint.x).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                        })}
-                    </Text>
-                </View>
-            )}
             <VictoryChart
                 width={width}
                 height={height}
@@ -71,7 +64,7 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                 }>
                 <VictoryAxis
                     style={{
-                        axis: { stroke: theme.border },
+                        axis: { stroke: 'transparent' },
                         tickLabels: { fill: theme.textSecondary, fontSize: 10 },
                         grid: { stroke: theme.border, strokeDasharray: '4,4' },
                     }}
@@ -83,7 +76,7 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                 <VictoryAxis
                     dependentAxis
                     style={{
-                        axis: { stroke: theme.border },
+                        axis: { stroke: 'transparent' },
                         tickLabels: { fill: theme.textSecondary, fontSize: 10 },
                         grid: { stroke: theme.border, strokeDasharray: '4,4' },
                     }}
@@ -93,26 +86,14 @@ export const AreaChart: React.FC<AreaChartProps> = ({
                     data={chartData}
                     style={{
                         data: {
-                            fill: theme.chart.line + '40', // 40 = 25% opacity in hex
-                            stroke: theme.chart.line,
+                            fill: chartColor,
+                            fillOpacity: 0.2,
+                            stroke: chartColor,
                             strokeWidth: 2,
                         },
                     }}
                     interpolation="monotoneX"
                 />
-                {activePoint && (
-                    <VictoryScatter
-                        data={[activePoint]}
-                        size={6}
-                        style={{
-                            data: {
-                                fill: theme.primary,
-                                stroke: theme.background,
-                                strokeWidth: 2,
-                            },
-                        }}
-                    />
-                )}
             </VictoryChart>
         </View>
     );
@@ -121,29 +102,5 @@ export const AreaChart: React.FC<AreaChartProps> = ({
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-    },
-    tooltipContainer: {
-        position: 'absolute',
-        top: 10,
-        alignSelf: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-        zIndex: 1000,
-    },
-    tooltipPrice: {
-        fontSize: 18,
-        fontWeight: '700',
-        textAlign: 'center',
-    },
-    tooltipDate: {
-        fontSize: 12,
-        marginTop: 2,
-        textAlign: 'center',
     },
 });
