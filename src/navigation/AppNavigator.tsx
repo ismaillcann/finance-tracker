@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { AuthNavigator } from './AuthNavigator';
-import { MainNavigator } from './MainNavigator';
+import { TabNavigator } from './TabNavigator';
 import { onAuthStateChanged } from '../services/firebase/auth';
 import { User } from '../types';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
@@ -29,7 +29,7 @@ export const AppNavigator = () => {
 
     return (
         <NavigationContainer>
-            {user ? <MainNavigator /> : <AuthNavigator />}
+            {user ? <TabNavigator /> : <AuthNavigator />}
         </NavigationContainer>
     );
 };
