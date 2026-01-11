@@ -28,7 +28,7 @@ export const TabNavigator = () => {
                     height: 90, // Taller tab bar for modern look
                     paddingTop: 10,
                 },
-                tabBarActiveTintColor: theme.chart.line, // Use our brand indingo
+                tabBarActiveTintColor: theme.primary, // Use standard brand color
                 tabBarInactiveTintColor: theme.textSecondary,
                 tabBarLabelStyle: {
                     fontSize: 12,
