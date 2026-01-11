@@ -24,8 +24,8 @@ export const Input: React.FC<InputProps> = ({
     style,
     ...props
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     return (
         <View style={[styles.container, containerStyle]}>

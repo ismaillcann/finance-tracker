@@ -16,8 +16,8 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     borderRadius: customBorderRadius = borderRadius.sm,
     style,
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
     const shimmerAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -62,8 +62,8 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 };
 
 export const AssetCardSkeleton: React.FC = () => {
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     return (
         <View style={[styles.cardContainer, { backgroundColor: theme.surface }]}>

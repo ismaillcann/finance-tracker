@@ -29,8 +29,8 @@ export const Button: React.FC<ButtonProps> = ({
     loading = false,
     style,
 }) => {
-    const colorScheme = useColorScheme() ?? 'light';
-    const theme = colors[colorScheme];
+    const colorScheme = useColorScheme();
+    const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
     const getButtonStyle = (): ViewStyle => {
         const baseStyle: ViewStyle = {
