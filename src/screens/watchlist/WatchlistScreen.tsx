@@ -27,7 +27,7 @@ const WatchlistItemWithPrice: React.FC<{
     item: WatchlistItem;
     onPress: () => void;
     onRemove: () => void;
-}> = ({ item, onPress, onRemove }) => {
+}> = React.memo(({ item, onPress, onRemove }) => {
     const { data: priceData } = useAssetQuote(
         item.asset.symbol,
         item.asset.type,
@@ -43,7 +43,7 @@ const WatchlistItemWithPrice: React.FC<{
             showDelete={true}
         />
     );
-};
+});
 
 export const WatchlistScreen = ({ navigation }: any) => {
     const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);

@@ -4,14 +4,12 @@ import {
     StyleSheet,
     Dimensions,
     useColorScheme,
-    Text,
 } from 'react-native';
 import {
     VictoryChart,
     VictoryArea,
     VictoryAxis,
     VictoryTheme,
-    VictoryScatter,
     VictoryZoomContainer,
 } from 'victory-native';
 import { CandlestickData } from '../../types';

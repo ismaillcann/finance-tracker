@@ -9,7 +9,7 @@ interface NewsCardProps {
     news: NewsItem;
 }
 
-export const NewsCard: React.FC<NewsCardProps> = ({ news }) => {
+export const NewsCard: React.FC<NewsCardProps> = React.memo(({ news }) => {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = colors[isDark ? 'dark' : 'light'];
@@ -73,7 +73,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news }) => {
             </View>
         </Pressable>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
